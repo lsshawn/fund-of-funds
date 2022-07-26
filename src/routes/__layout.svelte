@@ -1,5 +1,9 @@
 <script>
 	import '$lib/style.css';
+	import { user } from '$lib/stores/user.ts';
+
+	import UserCircle from '$lib/assets/icons/UserCircle.svelte';
+
 	import { page } from '$app/stores';
 	$: basePath = $page.url.pathname.split('/')[1];
 
@@ -15,10 +19,6 @@
 		{
 			name: 'Trade',
 			route: '/trade'
-		},
-		{
-			name: 'Tickers',
-			route: '/ticker'
 		}
 	];
 </script>
@@ -28,7 +28,7 @@
 	<div class="drawer-content flex flex-col">
 		<!-- Navbar -->
 		<div class="navbar bg-base-100">
-			<!-- drawer toggle -->
+			<!-- drawer toggle icon -->
 			<div class="flex-none lg:hidden">
 				<label for="my-drawer-3" class="btn btn-square btn-ghost">
 					<svg
@@ -63,6 +63,13 @@
 						{/each}
 					</ul>
 				</div>
+			</div>
+
+			<div class="navbar-end">
+				<UserCircle />
+				<span class="ml-1">
+					{$user.firstName}
+				</span>
 			</div>
 		</div>
 

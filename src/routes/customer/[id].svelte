@@ -34,25 +34,12 @@
 
 	export let customer;
 
-	const openPositions = [
-		{
-			_id: '1',
-			fund: '1',
-			quantity: 700
-		},
-		{
-			_id: '2',
-			fund: '2',
-			quantity: 300
-		}
-	];
-
 	import { form, field } from 'svelte-forms';
 	import { required, email } from 'svelte-forms/validators';
 
-	const firstName = field('firstName', customer.firstName, [required()]);
-	const lastName = field('lastName', customer.lastName, []);
-	const customerEmail = field('customerEmail', customer.email, [email()]);
+	const firstName = field('firstName', customer ? customer.firstName : '', [required()]);
+	const lastName = field('lastName', customer ? customer.lastName : '', []);
+	const customerEmail = field('customerEmail', customer ? customer.email : '', [email()]);
 	const customerForm = form(firstName, lastName, customerEmail);
 
 	function save() {
@@ -71,7 +58,7 @@
 <div>
 	<div class="prose flex">
 		<BackButton />
-		<h1 class="mb-0">Customer name</h1>
+		<h1 class="mb-0">{customer ? customer.firstName : 'Add new customer'}</h1>
 	</div>
 
 	<div>
@@ -128,8 +115,8 @@
 	</div>
 
 	<section class="mt-6">
-		<div>* required fields</div>
+		<div class="text-sm">* required fields</div>
 
-		<button class="btn btn-primary" on:click={save}>Save</button>
+		<button class="btn btn-primary mt-6" on:click={save}>Save</button>
 	</section>
 </div>

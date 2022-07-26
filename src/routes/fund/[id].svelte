@@ -3,9 +3,9 @@
 	import { required } from 'svelte-forms/validators';
 
 	const name = field('name', '', [required()]);
-	const contactPerson = field('contactPerson', '', []);
+	const manager = field('manager', '', []);
 	const description = field('description', '', []);
-	const launchDate = field('launchDate', '', []);
+	const inceptionDate = field('inceptionDate', '', []);
 	const baseCurrency = field('baseCurrency', '', []);
 	const managementFee = field('managementFee', '', []);
 	const performanceFee = field('performanceFee', '', []);
@@ -13,14 +13,28 @@
 	const minimumAdditionalInvestment = field('minimumAdditionalInvestmentu', '', []);
 	const fundForm = form(
 		name,
-		contactPerson,
+		manager,
 		description,
-		launchDate,
+		inceptionDate,
 		baseCurrency,
 		managementFee,
 		performanceFee
 	);
+
+	const tabs = ['Fund details', 'Returns', 'Trades'];
+	$: activeTab = tabs[0];
 </script>
+
+<!-- TODO only show if has fund -->
+<div class="tabs mb-6">
+	{#each tabs as tab}
+		<a
+			class="tab tab-lg tab-bordered"
+			class:tab-active={activeTab === tab}
+			on:click|preventDefault={() => (activeTab = tab)}>{tab}</a
+		>
+	{/each}
+</div>
 
 <div class="prose">
 	<h1>Fund name</h1>
@@ -42,12 +56,12 @@
 		{/if}
 	</div>
 
-	<div id="contactPerson">
+	<div id="manager">
 		<div class="form-control w-full max-w-xs">
 			<label class="label">
 				<span class="label-text">Contact Person</span>
 			</label>
-			<input type="text" bind:value={$contactPerson.value} class="input input-bordered w-full" />
+			<input type="text" bind:value={$manager.value} class="input input-bordered w-full" />
 		</div>
 	</div>
 
@@ -64,14 +78,14 @@
 		</div>
 	</div>
 
-	<div id="launchDate">
+	<div id="inceptionDate">
 		<div class="form-control w-full max-w-xs">
 			<label class="label">
 				<span class="label-text">Launch Date</span>
 			</label>
 			<input
 				type="text"
-				bind:value={$launchDate.value}
+				bind:value={$inceptionDate.value}
 				class="input input-bordered w-full"
 				placeholder="DD/MM/YYYY"
 			/>

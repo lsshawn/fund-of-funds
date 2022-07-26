@@ -1,4 +1,5 @@
 import { writable } from 'svelte/store'
+import { queryAPI } from '$lib/utils'
 
 const db = [
 	{
@@ -8,8 +9,7 @@ const db = [
 		createdDate: 1577808000000,
 		email: 'john@doe.com',
 		equity: 1245,
-		investedAmount: 1000,
-		investedFunds: [1]
+		deposit: 1000
 	},
 	{
 		_id: '2',
@@ -18,19 +18,58 @@ const db = [
 		createdDate: 1577808000000,
 		email: 'soonlai@abc.com',
 		equity: 21305,
-		investedAmount: 10000,
-		investedFunds: [1]
+		deposit: 10000
 	}
 ]
 
-function createCustomers() {
-	const { subscribe, set, update } = writable(db)
+function customersStore() {
+	const { subscribe, set, update } = writable([])
 
 	return {
 		subscribe,
-		add: (newObj) => update((storeValue) => [...storeValue, newObj]),
-		reset: () => set([])
+		reset: () => set([]),
+		init: async () => {
+			const queryName = 'customerGetMany'
+
+			const res = await queryAPI(
+				`{
+            ${queryName} {
+              email
+              firstName
+            }
+        }`,
+				queryName
+			)
+
+			set(res.data)
+		}
 	}
 }
 
-export const customers = createCustomers()
+function customerStore() {
+	const { subscribe, set, update } = writable({})
+
+	return {
+		subscribe,
+		reset: () => set([]),
+		init: async (id) => {
+			console.log('LS -> src/lib/stores/customer.ts:55 -> id: ', id)
+			const queryName = 'customerGet'
+
+			const res = await queryAPI(
+				`{
+            ${queryName} {
+              email
+              firstName
+              lastName
+            }
+        }`,
+				queryName
+			)
+
+			set(res.data)
+		}
+	}
+}
+
+export const customers = customersStore()

@@ -5,12 +5,15 @@ function createFunds() {
 		{
 			_id: 1,
 			name: 'Market Weight Index',
-			manager: 'ABC Ventures Capital'
+			manager: 'ABC Ventures Capital',
+			createdDate: 1577808000000,
+			investedAmount: 10000
 		},
 		{
 			_id: 2,
 			name: 'Stable',
-			manager: 'ABC Ventures Capital'
+			manager: 'ABC Ventures Capital',
+			createdDate: 1577808000000
 		}
 	])
 
@@ -21,4 +24,4 @@ function createFunds() {
 	}
 }
 
-export const tickers = createFunds()
+export const funds = createFunds()
