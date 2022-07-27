@@ -13,6 +13,13 @@
 			return unixToDate(value);
 		}
 
+		if (header.isNumber) {
+			const options = {
+				minimumFractionDigits: header.decimal || 0
+			};
+			return value.toLocaleString('en-US', options);
+		}
+
 		return value;
 	}
 </script>

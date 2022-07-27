@@ -1,6 +1,13 @@
 import { writable } from 'svelte/store'
 import { queryAPI, buildArgs } from '$lib/utils'
 
+const responseSchema = `
+_id
+firstName
+lastName
+email
+`
+
 function customersStore() {
 	const { subscribe, set, update } = writable([])
 
@@ -13,10 +20,7 @@ function customersStore() {
 			const res = await queryAPI(
 				`{
             ${queryName} {
-              _id
-              email
-              firstName
-              lastName
+              ${responseSchema}
             }
         }`,
 				queryName
@@ -35,11 +39,7 @@ function customerStore() {
 		reset: () => set({}),
 		init: async (_id) => {
 			if (!_id || _id === 'new') {
-				set({
-					email: '',
-					firstName: '',
-					lastName: ''
-				})
+				set({})
 				return
 			}
 
@@ -48,10 +48,7 @@ function customerStore() {
 			const res = await queryAPI(
 				`{
             ${queryName}(_id: "${_id}") {
-              _id
-              email
-              firstName
-              lastName
+              ${responseSchema}
             }
         }`,
 				queryName
@@ -90,10 +87,7 @@ function customerStore() {
 			const res = await queryAPI(
 				`mutation {
             ${queryName}(${buildArgs({ obj }, true)}) {
-              _id
-              email
-              firstName
-              lastName
+              ${responseSchema}
             }
         }`,
 				queryName

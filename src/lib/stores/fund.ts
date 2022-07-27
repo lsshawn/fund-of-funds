@@ -1,6 +1,23 @@
 import { writable } from 'svelte/store'
 import { queryAPI, buildArgs } from '$lib/utils'
 
+const responseSchema = `
+_id
+createdDate
+ticker
+name
+description
+manager
+inceptionDate
+baseCurrency
+managementFee
+performanceFee
+minInvestment
+minAdditionalInvestment
+investedAmount
+maxInvestableAmount
+`
+
 function fundsStore() {
 	const { subscribe, set, update } = writable([])
 
@@ -12,12 +29,7 @@ function fundsStore() {
 
 			const res = await queryAPI(
 				`{
-            ${queryName} {
-              _id
-              email
-              firstName
-              lastName
-            }
+            ${queryName} {${responseSchema}}
         }`,
 				queryName
 			)
@@ -34,15 +46,17 @@ function fundStore() {
 		subscribe,
 		reset: () => set({}),
 		init: async (_id) => {
+			if (!_id || _id === 'new') {
+				set({})
+				return
+			}
+
 			const queryName = 'fundGet'
 
 			const res = await queryAPI(
 				`{
             ${queryName}(_id: "${_id}") {
-              _id
-              email
-              firstName
-              lastName
+              ${responseSchema}
             }
         }`,
 				queryName
@@ -60,10 +74,27 @@ function fundStore() {
 			const res = await queryAPI(
 				`mutation {
             ${queryName}(${buildArgs({ obj }, true)}) {
-              _id
-              email
-              firstName
-              lastName
+              ${responseSchema}
+          }
+        }`,
+				queryName
+			)
+
+			if (res.error || res.errors) {
+				return res
+			}
+
+			set({ ...res.data })
+
+			return res
+		},
+		create: async (obj) => {
+			const queryName = 'fundCreate'
+
+			const res = await queryAPI(
+				`mutation {
+            ${queryName}(${buildArgs({ obj }, true)}) {
+              ${responseSchema}
             }
         }`,
 				queryName
