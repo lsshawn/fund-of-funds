@@ -17,7 +17,7 @@
 			route: '/customer'
 		},
 		{
-			name: 'Trade',
+			name: 'Trades',
 			route: '/trade'
 		}
 	];
@@ -27,7 +27,7 @@
 	<input id="my-drawer-3" type="checkbox" class="drawer-toggle" />
 	<div class="drawer-content flex flex-col">
 		<!-- Navbar -->
-		<div class="navbar bg-base-100">
+		<div class="navbar bg-slate-100">
 			<!-- drawer toggle icon -->
 			<div class="flex-none lg:hidden">
 				<label for="my-drawer-3" class="btn btn-square btn-ghost">

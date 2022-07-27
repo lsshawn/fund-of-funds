@@ -1,0 +1,53 @@
+[
+	{
+		"name": "Created date",
+		"value": "createdDate",
+		"formatDate": true
+	},
+	{
+		"name": "Asset",
+		"value": "asset.ticker"
+	},
+	{
+		"name": "Asset Type",
+		"value": "asset.type",
+		"class": "capitalize"
+	},
+	{
+		"name": "Trade Type",
+		"value": "tradeType",
+		"class": "capitalize"
+	},
+	{
+		"name": "Currency",
+		"value": "currency"
+	},
+	{
+		"name": "Quantity",
+		"value": "quantity",
+		"class": "text-right",
+		"isNumber": true
+	},
+	{
+		"name": "Price",
+		"value": "price",
+		"class": "text-right",
+		"isNumber": true
+	},
+	{
+		"name": "Value ($)",
+		"value": "value",
+		"class": "text-right",
+		"isNumber": true
+	},
+	{
+		"name": "Trade Date",
+		"value": "tradeDate",
+		"class": "text-right",
+		"formatDate": true
+	},
+	{
+		"name": "Customer",
+		"value": "customer.firstName"
+	}
+]

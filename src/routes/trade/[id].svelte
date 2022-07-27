@@ -3,7 +3,12 @@
 	import SaveButton from '$lib/components/SaveButton.svelte';
 
 	import { onMount } from 'svelte';
+	import { goto } from '$app/navigation';
+
 	import { trade } from '$lib/stores/trade.ts';
+	import { assetAutocomplete } from '$lib/stores/asset.ts';
+	import { customerAutocomplete } from '$lib/stores/customer.ts';
+
 	import { form, field } from 'svelte-forms';
 	import { required } from 'svelte-forms/validators';
 
@@ -12,7 +17,7 @@
 	const isNew = id === 'new';
 
 	let myForm;
-	let tradeType, quantity, price, fund, customer, tradeDate, currency;
+	let tradeType, quantity, price, asset, customer, tradeDate, currency;
 
 	onMount(async () => {
 		await trade.init(id);
@@ -20,15 +25,16 @@
 		tradeType = field('tradeType', $trade.tradeType, [required()]);
 		quantity = field('quantity', $trade.quantity, [required()]);
 		price = field('price', $trade.price, [required()]);
-		fund = field('fund', $trade.fund, [required()]);
-		customer = field('customer', $trade.customer, [required()]);
+		asset = field('asset', $trade.asset ? $trade.asset._id : undefined, [required()]);
+		customer = field('customer', $trade.customer ? $trade.customer._id : undefined, [required()]);
 		tradeDate = field('tradeDate', $trade.tradeDate, [required()]);
 		currency = field('currency', $trade.currency, [required()]);
 
-		myForm = form(tradeType, quantity, price, fund, customer, tradeDate, currency);
+		myForm = form(tradeType, quantity, price, asset, customer, tradeDate, currency);
 	});
 
 	const tradeTypes = ['buy', 'sell', 'deposit', 'withdrawal', 'adjustment', 'conversion'];
+	const currencies = ['USD', 'BTC', 'EUR', 'MYR', 'SGD'];
 
 	$: saving = false;
 	$: saved = false;
@@ -55,19 +61,23 @@
 			tradeType: $tradeType.value,
 			quantity: $quantity.value,
 			price: $price.value,
-			fund: $fund.value,
+			asset: $asset.value,
 			customer: $customer.value,
-			tradeDate: $customer.value,
+			tradeDate: $tradeDate.value,
 			currency: $currency.value
 		};
 
 		if (!isNew) updated['_id'] = $trade._id;
 
 		Object.entries(updated).map(([key, value]) => {
+			console.log('LS -> src/routes/trade/[id].svelte:72 -> key: ', key);
+			console.log('LS -> src/routes/trade/[id].svelte:72 -> value: ', value);
 			if (value === undefined || value === null) {
 				errors.push(`${key} is required`);
 			}
 		});
+
+		// TODO: Validate Fund is required if tradeType is buy, sell, or fee.
 
 		if (errors.length) {
 			notifyError();
@@ -82,12 +92,33 @@
 			saved = true;
 			setTimeout(() => {
 				saved = false;
+				if (isNew) goto('/trade');
 			}, 1000);
 		} else {
 			errors = res.errors;
 			notifyError();
 		}
 	}
+
+	// debounce search for fund ticker
+
+	let autocompleteAssetTimer;
+	const autocompleteAsset = (ticker) => {
+		clearTimeout(autocompleteAssetTimer);
+		autocompleteAssetTimer = setTimeout(async () => {
+			await assetAutocomplete.search(ticker);
+		}, 500);
+	};
+
+	// debounce search for customer firstName
+
+	let autocompleteCustomerTimer;
+	const autocompleteCustomer = (firstName) => {
+		clearTimeout(autocompleteCustomerTimer);
+		autocompleteCustomerTimer = setTimeout(async () => {
+			await customerAutocomplete.search(firstName);
+		}, 500);
+	};
 </script>
 
 <div class="prose flex">
@@ -100,26 +131,29 @@
 {:then}
 	{#if $myForm}
 		<div>
-			<!--
-			<section id="form-ticker">
+			<div id="form-customer">
 				<div class="form-control w-full max-w-xs">
-					<label class="label" for="ticker">
-						<span class="label-text">Ticker *</span>
+					<label class="label" for="customer">
+						<span class="label-text">Customer *</span>
 					</label>
 
-					<select class="select select-bordered" bind:value={$ticker.value} id="ticker">
-						{#each availableFunds as ticker}
-							<option>{ticker}</option>
+					<input
+						type="text"
+						bind:value={$customer.value}
+						class="input input-bordered w-full"
+						id="customer"
+						list="customers"
+						on:input={(e) => autocompleteCustomer(e.target.value)}
+					/>
+					<datalist id="customers">
+						{#each $customerAutocomplete as customer}
+							<option value={customer._id}>{customer.firstName} ({customer.email})</option>
 						{/each}
-					</select>
+					</datalist>
 				</div>
-				{#if $myForm.hasError('ticker.required')}
-					<div class="text-error">Ticker is required</div>
-				{/if}
-			</section>
--->
+			</div>
 
-			<div id="form-type">
+			<div id="form-tradeType">
 				<div class="form-control w-full max-w-xs">
 					<label class="label" for="tradeType">
 						<span class="label-text">Trade Type *</span>
@@ -133,6 +167,46 @@
 				</div>
 				{#if $myForm.hasError('tradeType.required')}
 					<div class="text-error">Type is required</div>
+				{/if}
+			</div>
+
+			<div id="form-asset">
+				<div class="form-control w-full max-w-xs">
+					<label class="label" for="asset">
+						<span class="label-text">Asset</span>
+					</label>
+
+					<input
+						type="text"
+						bind:value={$asset.value}
+						class="input input-bordered w-full"
+						id="asset"
+						list="tickers"
+						on:input={(e) => autocompleteAsset(e.target.value)}
+					/>
+					<datalist id="tickers">
+						{#each $assetAutocomplete as asset}
+							<option value={asset._id}>{asset.ticker}</option>
+						{/each}
+					</datalist>
+				</div>
+			</div>
+
+			<!-- TODO: autofill based on selected asset -->
+			<div id="form-currency">
+				<div class="form-control w-full max-w-xs">
+					<label class="label" for="currency">
+						<span class="label-text">Currency *</span>
+					</label>
+
+					<select class="select select-bordered" bind:value={$currency.value} id="tradeType">
+						{#each currencies as currency}
+							<option>{currency}</option>
+						{/each}
+					</select>
+				</div>
+				{#if $myForm.hasError('currency.required')}
+					<div class="text-error">Curreny is required</div>
 				{/if}
 			</div>
 
@@ -196,9 +270,9 @@
 			</div>
 		</div>
 
-		<SaveButton onClick={save} {errors} {saved} {hasError} {saving} />
-		{#if !isNew}
-			<!-- TODO: delete button -->
+		{#if isNew}
+			<SaveButton onClick={save} {errors} {saved} {hasError} {saving} />
 		{/if}
+		<!-- TODO: delete button -->
 	{/if}
 {/await}

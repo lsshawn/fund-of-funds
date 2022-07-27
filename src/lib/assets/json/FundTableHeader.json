@@ -1,0 +1,40 @@
+[
+	{
+		"name": "Ticker",
+		"value": "ticker"
+	},
+	{
+		"name": "Name",
+		"value": "name"
+	},
+	{
+		"name": "Manager",
+		"value": "manager"
+	},
+	{
+		"name": "Management Fee %",
+		"value": "managementFee",
+		"class": "text-right",
+		"isNumber": true,
+		"decimal": 2
+	},
+	{
+		"name": "Performance Fee %",
+		"value": "performanceFee",
+		"class": "text-right",
+		"isNumber": true,
+		"decimal": 2
+	},
+	{
+		"name": "Max Investable Amount ($)",
+		"value": "maxInvestableAmount",
+		"class": "text-right",
+		"isNumber": true
+	},
+	{
+		"name": "Created Date",
+		"value": "createdDate",
+		"formatDate": true,
+		"class": "text-right"
+	}
+]

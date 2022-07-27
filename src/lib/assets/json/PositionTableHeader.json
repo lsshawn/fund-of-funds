@@ -1,0 +1,30 @@
+[
+	{
+		"name": "Asset",
+		"value": "asset.ticker"
+	},
+	{
+		"name": "Last Price",
+		"value": "asset.lastPrice"
+	},
+	{
+		"name": "Quantity",
+		"value": "quantity",
+		"class": "text-right",
+		"isNumber": true
+	},
+	{
+		"name": "Market Value ($)",
+		"value": "marketValue"
+	},
+	{
+		"name": "Updated Date",
+		"value": "updatedDate",
+		"class": "text-right",
+		"formatDate": true
+	},
+	{
+		"name": "Customer",
+		"value": "customer.firstName"
+	}
+]

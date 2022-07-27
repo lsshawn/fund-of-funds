@@ -6,7 +6,27 @@
 	export let onRowClick = () => {};
 
 	function formatValue(obj, header) {
-		const value = obj[header.value];
+		let value;
+		// nested object
+		if (header.value.includes('.')) {
+			const splitted = header.value.split('.');
+			if (!splitted) return '-';
+			let tempValue = obj;
+			for (let i = 0; i < splitted.length; i++) {
+				const key = splitted[i];
+
+				if (!tempValue[key]) {
+					tempValue = '-';
+					break;
+				}
+
+				tempValue = tempValue[key];
+			}
+			value = tempValue;
+		} else {
+			value = obj[header.value];
+		}
+
 		if (!value) return '-';
 
 		if (header.formatDate) {
@@ -45,4 +65,8 @@
 			{/each}
 		</tbody>
 	</table>
+
+	{#if !data.length}
+		<p class="text-center mt-6 text-base-400">No data</p>
+	{/if}
 </div>

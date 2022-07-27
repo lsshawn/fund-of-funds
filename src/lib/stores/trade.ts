@@ -8,7 +8,7 @@ currency
 quantity
 price
 value
-fund
+asset
 createdBy
 customer
 createdDate
@@ -106,5 +106,65 @@ function tradeStore() {
 	}
 }
 
+function assetTradesStore() {
+	const { subscribe, set, update } = writable([])
+
+	return {
+		subscribe,
+		reset: () => set([]),
+		init: async (assetId) => {
+			if (!assetId) return
+
+			const queryName = 'tradeGetManyByAsset'
+
+			const res = await queryAPI(
+				`{
+            ${queryName}(asset: "${assetId}") {
+              ${responseSchema}
+            }
+        }`,
+				queryName
+			)
+
+			if (res.error || res.errors) {
+				throw new Error(res)
+			}
+
+			set(res.data)
+		}
+	}
+}
+
+function customerTradesStore() {
+	const { subscribe, set, update } = writable([])
+
+	return {
+		subscribe,
+		reset: () => set([]),
+		init: async (customerId) => {
+			if (!customerId) return
+
+			const queryName = 'tradeGetManyByCustomer'
+
+			const res = await queryAPI(
+				`{
+            ${queryName}(customer: "${customerId}") {
+              ${responseSchema}
+            }
+        }`,
+				queryName
+			)
+
+			if (res.error || res.errors) {
+				throw new Error(res)
+			}
+
+			set(res.data)
+		}
+	}
+}
+
 export const trades = tradesStore()
 export const trade = tradeStore()
+export const assetTrades = assetTradesStore()
+export const customerTrades = customerTradesStore()

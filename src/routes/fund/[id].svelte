@@ -1,9 +1,13 @@
 <script>
 	import BackButton from '$lib/components/BackButton.svelte';
 	import SaveButton from '$lib/components/SaveButton.svelte';
+	import AssetTrades from '$lib/components/asset/AssetTrades.svelte';
 
 	import { onMount } from 'svelte';
-	import { fund } from '$lib/stores/fund.ts';
+	import { goto } from '$app/navigation';
+
+	import { asset } from '$lib/stores/asset.ts';
+
 	import { form, field } from 'svelte-forms';
 	import { required } from 'svelte-forms/validators';
 
@@ -25,19 +29,19 @@
 		maxInvestableAmount;
 
 	onMount(async () => {
-		await fund.init(id);
+		await asset.init(id);
 
-		ticker = field('ticker', $fund.ticker, [required()]);
-		name = field('name', $fund.name, []);
-		description = field('description', $fund.description, []);
-		manager = field('manager', $fund.manager, []);
-		inceptionDate = field('inceptionDate', $fund.inceptionDate, []);
-		baseCurrency = field('baseCurrency', $fund.baseCurrency, []);
-		managementFee = field('managementFee', $fund.managementFee, []);
-		performanceFee = field('performanceFee', $fund.performanceFee, []);
-		minInvestment = field('minInvestment', $fund.minInvestment, []);
-		minAdditionalInvestment = field('minAdditionalInvestment', $fund.minAdditionalInvestment, []);
-		maxInvestableAmount = field('maxInvestableAmount', $fund.maxInvestableAmount, []);
+		ticker = field('ticker', $asset.ticker, [required()]);
+		name = field('name', $asset.name, []);
+		description = field('description', $asset.description, []);
+		manager = field('manager', $asset.manager, []);
+		inceptionDate = field('inceptionDate', $asset.inceptionDate, []);
+		baseCurrency = field('baseCurrency', $asset.baseCurrency, []);
+		managementFee = field('managementFee', $asset.managementFee, []);
+		performanceFee = field('performanceFee', $asset.performanceFee, []);
+		minInvestment = field('minInvestment', $asset.minInvestment, []);
+		minAdditionalInvestment = field('minAdditionalInvestment', $asset.minAdditionalInvestment, []);
+		maxInvestableAmount = field('maxInvestableAmount', $asset.maxInvestableAmount, []);
 		myForm = form(
 			ticker,
 			name,
@@ -52,7 +56,7 @@
 		);
 	});
 
-	const tabs = ['Fund details', 'Prices', 'Trades'];
+	const tabs = ['Fund details', 'Trades', 'Prices'];
 	$: activeTab = tabs[0];
 
 	$: saving = false;
@@ -90,7 +94,7 @@
 			maxInvestableAmount: $maxInvestableAmount.value
 		};
 
-		if (!isNew) updatedFund['_id'] = $fund._id;
+		if (!isNew) updatedFund['_id'] = $asset._id;
 
 		const requiredFields = ['ticker'];
 		requiredFields.map((field) => {
@@ -105,13 +109,15 @@
 		}
 
 		saving = true;
-		const res = isNew ? await fund.create(updatedFund) : await fund.update(updatedFund);
+		const res = isNew ? await asset.create(updatedFund) : await asset.update(updatedFund);
 
 		saving = false;
 		if (res.statusCode === 200) {
 			saved = true;
 			setTimeout(() => {
 				saved = false;
+
+				if (isNew) goto('/fund');
 			}, 1000);
 		} else {
 			errors = res.errors;
@@ -142,7 +148,7 @@
 		<h1>Fund details</h1>
 	</div>
 
-	{#await fund.init(id)}
+	{#await asset.init(id)}
 		<p>Loading fund...</p>
 	{:then}
 		{#if $myForm}
@@ -349,5 +355,5 @@
 	<div class="prose">
 		<h1>Trades</h1>
 	</div>
-	<div class="prose">TODO: Filter trades by fund</div>
+	<AssetTrades assetId={id} />
 {/if}

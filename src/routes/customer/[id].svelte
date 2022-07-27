@@ -1,9 +1,14 @@
 <script>
 	import BackButton from '$lib/components/BackButton.svelte';
 	import SaveButton from '$lib/components/SaveButton.svelte';
+	import CustomerTrades from '$lib/components/customer/CustomerTrades.svelte';
+	import CustomerPositions from '$lib/components/customer/CustomerPositions.svelte';
 
 	import { onMount } from 'svelte';
+	import { goto } from '$app/navigation';
+
 	import { customer } from '$lib/stores/customer.ts';
+
 	import { form, field } from 'svelte-forms';
 	import { required, email } from 'svelte-forms/validators';
 
@@ -21,6 +26,9 @@
 		customerEmail = field('customerEmail', $customer.email, [required(), email()]);
 		myForm = form(firstName, lastName, customerEmail);
 	});
+
+	const tabs = ['Details', 'Open Positions', 'Trades'];
+	$: activeTab = tabs[0];
 
 	$: saving = false;
 	$: saved = false;
@@ -73,6 +81,7 @@
 			saved = true;
 			setTimeout(() => {
 				saved = false;
+				if (isNew) goto('/customer');
 			}, 1000);
 		} else {
 			errors = res.errors;
@@ -81,12 +90,28 @@
 	}
 </script>
 
-<div>
-	<div class="prose flex">
-		<BackButton />
-		<h1 class="mb-0">{isNew ? 'Add new ' : 'Edit '} customer</h1>
-	</div>
+<div class="prose flex">
+	<BackButton />
+	<h1 class="mb-0">{isNew ? 'Add new ' : 'Edit '} customer</h1>
+</div>
 
+{#if !isNew}
+	<div class="tabs mb-6">
+		{#each tabs as tab}
+			<a
+				class="tab tab-lg tab-bordered"
+				class:tab-active={activeTab === tab}
+				href={`#tab-${tab}`}
+				on:click|preventDefault={() => (activeTab = tab)}>{tab}</a
+			>
+		{/each}
+	</div>
+{/if}
+
+{#if activeTab === 'Details'}
+	<div class="prose">
+		<h1>Details</h1>
+	</div>
 	{#await customer.init(id)}
 		<p>Loading customer...</p>
 	{:then}
@@ -149,4 +174,18 @@
 	{:catch error}
 		<p class="text-error">Error in loading customer {JSON.stringify(error)}</p>
 	{/await}
-</div>
+{/if}
+
+{#if activeTab === 'Open Positions'}
+	<div class="prose">
+		<h1>Open Positions</h1>
+	</div>
+	<CustomerPositions customerId={id} />
+{/if}
+
+{#if activeTab === 'Trades'}
+	<div class="prose">
+		<h1>Trades</h1>
+	</div>
+	<CustomerTrades customerId={id} />
+{/if}

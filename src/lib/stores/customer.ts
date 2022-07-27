@@ -102,5 +102,28 @@ function customerStore() {
 	}
 }
 
+function customerAutocompleteStore() {
+	const { subscribe, set, update } = writable([])
+
+	return {
+		subscribe,
+		reset: () => set([]),
+		search: async (firstName) => {
+			const queryName = 'customerAutocomplete'
+
+			const res = await queryAPI(
+				`{
+            ${queryName}(firstName: "${firstName}") {
+              _id firstName email
+            }
+        }`,
+				queryName
+			)
+			set(res.data)
+		}
+	}
+}
+
 export const customers = customersStore()
 export const customer = customerStore()
+export const customerAutocomplete = customerAutocompleteStore()

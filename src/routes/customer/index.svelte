@@ -1,5 +1,6 @@
 <script>
 	import DataTable from '$lib/components/DataTable.svelte';
+	import headers from '$lib/assets/json/CustomerTableHeader.json';
 
 	import { customers } from '$lib/stores/customer.ts';
 	import { goto } from '$app/navigation';
@@ -7,30 +8,6 @@
 	function view(obj) {
 		goto(`/customer/${obj ? obj._id : 'new'}`);
 	}
-
-	const headers = [
-		{
-			name: 'First Name',
-			value: 'firstName'
-		},
-		{
-			name: 'Last Name',
-			value: 'lastName'
-		},
-		{
-			name: 'Email',
-			value: 'email'
-		},
-		{
-			name: 'Total Deposits ($)',
-			value: 'deposit',
-			class: 'text-right'
-		},
-		{
-			name: 'Invested Funds',
-			value: 'investedFunds'
-		}
-	];
 </script>
 
 <div>
