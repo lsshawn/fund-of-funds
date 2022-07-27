@@ -1,26 +1,5 @@
 import { writable } from 'svelte/store'
-import { queryAPI } from '$lib/utils'
-
-const db = [
-	{
-		_id: '1',
-		firstName: 'John',
-		lastName: 'Doe',
-		createdDate: 1577808000000,
-		email: 'john@doe.com',
-		equity: 1245,
-		deposit: 1000
-	},
-	{
-		_id: '2',
-		firstName: 'Soon Lai',
-		lastName: 'Mah',
-		createdDate: 1577808000000,
-		email: 'soonlai@abc.com',
-		equity: 21305,
-		deposit: 10000
-	}
-]
+import { queryAPI, buildArgs } from '$lib/utils'
 
 function customersStore() {
 	const { subscribe, set, update } = writable([])
@@ -34,8 +13,10 @@ function customersStore() {
 			const res = await queryAPI(
 				`{
             ${queryName} {
+              _id
               email
               firstName
+              lastName
             }
         }`,
 				queryName
@@ -51,14 +32,14 @@ function customerStore() {
 
 	return {
 		subscribe,
-		reset: () => set([]),
-		init: async (id) => {
-			console.log('LS -> src/lib/stores/customer.ts:55 -> id: ', id)
+		reset: () => set({}),
+		init: async (_id) => {
 			const queryName = 'customerGet'
 
 			const res = await queryAPI(
 				`{
-            ${queryName} {
+            ${queryName}(_id: "${_id}") {
+              _id
               email
               firstName
               lastName
@@ -67,9 +48,38 @@ function customerStore() {
 				queryName
 			)
 
-			set(res.data)
+			if (res.error || res.errors) {
+				throw new Error(res)
+			}
+
+			console.log('LS -> src/lib/stores/customer.ts:77 -> res.data: ', res.data)
+			set({ ...res.data })
+		},
+		update: async (obj) => {
+			const queryName = 'customerUpdate'
+
+			const res = await queryAPI(
+				`mutation {
+            ${queryName}(${buildArgs({ obj }, true)}) {
+              _id
+              email
+              firstName
+              lastName
+            }
+        }`,
+				queryName
+			)
+
+			if (res.error || res.errors) {
+				throw new Error(res)
+			}
+
+			if (!res.data) return
+
+			set({ ...res.data })
 		}
 	}
 }
 
 export const customers = customersStore()
+export const customer = customerStore()
