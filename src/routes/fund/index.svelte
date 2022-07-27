@@ -1,7 +1,7 @@
 <script>
 	import DataTable from '$lib/components/DataTable.svelte';
 
-	import headers from '$lib/assts/json/FundTableHeader.json';
+	import headers from '$lib/assets/json/FundTableHeader.json';
 	import { funds } from '$lib/stores/asset.ts';
 	import { goto } from '$app/navigation';
 

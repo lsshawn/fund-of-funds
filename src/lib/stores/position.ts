@@ -12,32 +12,32 @@ marketValue
 `
 
 function customerPositionsStore() {
-	const { subscribe, set, update } = writable([])
+  const { subscribe, set, update } = writable([])
 
-	return {
-		subscribe,
-		reset: () => set([]),
-		init: async (customerId: string) => {
-			if (!customerId) return
+  return {
+    subscribe,
+    reset: () => set([]),
+    init: async (customerId: string) => {
+      if (!customerId) return
 
-			const queryName = 'positionGetManyByCustomer'
+      const queryName = 'positionGetManyByCustomer'
 
-			const res = await queryAPI(
-				`{
+      const res = await queryAPI(
+        `{
             ${queryName}(customer: "${customerId}") {
               ${responseSchema}
             }
         }`,
-				queryName
-			)
+        queryName
+      )
 
-			if (res.error || res.errors) {
-				throw new Error(res)
-			}
+      if (res.error || res.errors) {
+        throw new Error(res)
+      }
 
-			set(res.data)
-		}
-	}
+      set(res.data)
+    }
+  }
 }
 
 export const customerPositions = customerPositionsStore()

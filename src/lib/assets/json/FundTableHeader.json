@@ -8,6 +8,12 @@
 		"value": "name"
 	},
 	{
+		"name": "Last Price",
+		"value": "lastPrice",
+		"class": "text-right",
+		"isNumber": true
+	},
+	{
 		"name": "Manager",
 		"value": "manager"
 	},

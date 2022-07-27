@@ -10,14 +10,5 @@
 	{
 		"name": "Email",
 		"value": "email"
-	},
-	{
-		"name": "Total Deposits ($)",
-		"value": "deposit",
-		"class": "text-right"
-	},
-	{
-		"name": "Invested Funds",
-		"value": "investedFunds"
 	}
 ]

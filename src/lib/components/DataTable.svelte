@@ -50,7 +50,7 @@
 			<tr>
 				<th />
 				{#each headers as header}
-					<th class={`${header.class || ''} normal-case`}>{header.name}</th>
+					<th class={`normal-case ${header.class || ''}`}>{header.name}</th>
 				{/each}
 			</tr>
 		</thead>

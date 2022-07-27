@@ -6,6 +6,7 @@ _id
 createdDate
 ticker
 name
+lastPrice
 description
 manager
 inceptionDate

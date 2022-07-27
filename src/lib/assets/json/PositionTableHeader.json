@@ -4,8 +4,14 @@
 		"value": "asset.ticker"
 	},
 	{
+		"name": "Asset Type",
+		"value": "asset.type"
+	},
+	{
 		"name": "Last Price",
-		"value": "asset.lastPrice"
+		"value": "asset.lastPrice",
+		"class": "text-right",
+		"isNumber": true
 	},
 	{
 		"name": "Quantity",
@@ -15,7 +21,9 @@
 	},
 	{
 		"name": "Market Value ($)",
-		"value": "marketValue"
+		"value": "marketValue",
+		"class": "text-right",
+		"isNumber": true
 	},
 	{
 		"name": "Updated Date",
