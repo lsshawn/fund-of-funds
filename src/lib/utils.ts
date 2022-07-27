@@ -26,12 +26,8 @@ export const queryAPI = async (query: string, operationName: string): Promise<Gr
 		json.statusCode = res.status
 		json.data = res.data.data[operationName]
 		if (res.data.errors) {
-			json.error = JSON.stringify(res.data.errors)
-			console.error('has errors: ', json)
-		}
-
-		if (json.statusCode !== 200) {
-			console.error('status not 200: ', json)
+			json.statusCode = 422
+			json.errors = res.data.errors.map((obj) => obj.message)
 		}
 	} catch (err) {
 		console.log(`Error in Graph API: ${err}`)

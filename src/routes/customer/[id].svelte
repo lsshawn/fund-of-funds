@@ -1,114 +1,152 @@
 <script>
 	import BackButton from '$lib/components/BackButton.svelte';
-	import Check from '$lib/assets/icons/Check.svelte';
+	import SaveButton from '$lib/components/SaveButton.svelte';
 
+	import { onMount } from 'svelte';
 	import { customer } from '$lib/stores/customer.ts';
-
-	import { page } from '$app/stores';
-	const customerId = $page.params.id;
-
 	import { form, field } from 'svelte-forms';
 	import { required, email } from 'svelte-forms/validators';
 
-	const firstName = field('firstName', $customer.firstName, [required()]);
-	const lastName = field('lastName', $customer ? $customer.lastName : '', []);
-	const customerEmail = field('customerEmail', $customer ? $customer.email : '', [email()]);
-	const customerForm = form(firstName, lastName, customerEmail);
+	import { page } from '$app/stores';
+	const id = $page.params.id;
+	const isNew = id === 'new';
+
+	let myForm;
+	let firstName, lastName, customerEmail;
+	onMount(async () => {
+		await customer.init(id);
+
+		firstName = field('firstName', $customer.firstName, [required()]);
+		lastName = field('lastName', $customer.lastName, []);
+		customerEmail = field('customerEmail', $customer.email, [required(), email()]);
+		myForm = form(firstName, lastName, customerEmail);
+	});
 
 	$: saving = false;
 	$: saved = false;
+	$: hasError = false;
+	$: errors = [];
 	async function save() {
-		const valid = $customerForm.valid;
-		if (!valid) return;
+		function notifyError() {
+			hasError = true;
+			setTimeout(() => {
+				hasError = false;
+			}, 1000);
+		}
 
-		saving = true;
+		hasError = false;
+		errors = [];
+
+		const valid = $myForm.valid;
+		if (!valid) {
+			notifyError();
+			return;
+		}
 
 		const updatedCustomer = {
-			_id: $customer._id,
 			firstName: $firstName.value,
 			lastName: $lastName.value,
 			email: $customerEmail.value
 		};
 
-		await customer.update(updatedCustomer);
+		if (!isNew) updatedCustomer['_id'] = $customer._id;
+
+		const requiredFields = ['firstName', 'email'];
+		requiredFields.map((field) => {
+			if (!updatedCustomer[field]) {
+				errors.push(`${field} is required`);
+			}
+		});
+
+		if (errors.length) {
+			notifyError();
+			return;
+		}
+
+		saving = true;
+		const res = isNew
+			? await customer.create(updatedCustomer)
+			: await customer.update(updatedCustomer);
 
 		saving = false;
-		saved = true;
-		setTimeout(() => {
-			saved = false;
-		}, 1000);
+		if (res.statusCode === 200) {
+			saved = true;
+			setTimeout(() => {
+				saved = false;
+			}, 1000);
+		} else {
+			errors = res.errors;
+			notifyError();
+		}
 	}
 </script>
 
 <div>
 	<div class="prose flex">
 		<BackButton />
-		<h1 class="mb-0">{customerId !== 'new' ? 'Edit customer' : 'Add new customer'}</h1>
+		<h1 class="mb-0">{isNew ? 'Add new ' : 'Edit '} customer</h1>
 	</div>
 
-	{#await customer.init(customerId)}
+	{#await customer.init(id)}
 		<p>Loading customer...</p>
 	{:then}
-		{$customer.firstName}
-		<div>
-			<div class="form-control w-full max-w-xs">
-				<label class="label">
-					<span class="label-text">First name *</span>
-				</label>
-				<input
-					type="text"
-					bind:value={$firstName.value}
-					class="input input-bordered w-full"
-					class:input-error={$customerForm.hasError('firstName.required')}
-				/>
-			</div>
-			{#if $customerForm.hasError('firstName.required')}
-				<div class="text-error">First name is required</div>
-			{/if}
-		</div>
-
-		<div>
-			<div class="form-control w-full max-w-xs">
-				<label class="label">
-					<span class="label-text">Last name</span>
-				</label>
-				<input type="text" bind:value={$lastName.value} class="input input-bordered w-full" />
-			</div>
-		</div>
-
-		<div>
-			<div class="form-control w-full max-w-xs">
-				<label class="label">
-					<span class="label-text">Email *</span>
-				</label>
-				<input type="text" bind:value={$customerEmail.value} class="input input-bordered w-full" />
-			</div>
-
-			{#if $customerForm.hasError('customerEmail.required')}
-				<div class="text-error">Email is required</div>
-			{/if}
-			{#if $customerForm.hasError('customerEmail.not_an_email')}
-				<div class="text-error">Email invalid</div>
-			{/if}
-		</div>
-
-		<section class="mt-6">
-			<div class="text-sm">* required fields</div>
-
-			<button
-				class="btn btn-primary mt-6"
-				on:click={save}
-				class:loading={saving}
-				class:btn-success={saved}
-			>
-				{#if saved}
-					<Check />
+		{#if $myForm}
+			<div>
+				<div class="form-control w-full max-w-xs">
+					<label class="label" for="firstName">
+						<span class="label-text">First name *</span>
+					</label>
+					<input
+						type="text"
+						bind:value={$firstName.value}
+						class="input input-bordered w-full"
+						class:input-error={$myForm.hasError('firstName.required')}
+						id="firstName"
+					/>
+				</div>
+				{#if $myForm.hasError('firstName.required')}
+					<div class="text-error">First name is required</div>
 				{/if}
+			</div>
 
-				{saved ? 'Saved' : 'Save'}
-			</button>
-		</section>
+			<div>
+				<div class="form-control w-full max-w-xs">
+					<label class="label" for="lastName">
+						<span class="label-text">Last name</span>
+					</label>
+					<input
+						type="text"
+						bind:value={$lastName.value}
+						class="input input-bordered w-full"
+						id="lastName"
+					/>
+				</div>
+			</div>
+
+			<div>
+				<div class="form-control w-full max-w-xs">
+					<label class="label" for="email">
+						<span class="label-text">Email *</span>
+					</label>
+					<input
+						type="text"
+						bind:value={$customerEmail.value}
+						class="input input-bordered w-full"
+						id="email"
+					/>
+				</div>
+
+				{#if $myForm.hasError('customerEmail.required')}
+					<div class="text-error">Email is required</div>
+				{/if}
+				{#if $myForm.hasError('customerEmail.not_an_email')}
+					<div class="text-error">Email invalid</div>
+				{/if}
+			</div>
+
+			<SaveButton onClick={save} {errors} {saved} {hasError} {saving} />
+		{/if}
 	{:catch error}
-		<p class="text-error">Error in loading customer</p>
+		<p class="text-error">Error in loading customer {JSON.stringify(error)}</p>
 	{/await}
 </div>

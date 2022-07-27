@@ -34,6 +34,15 @@ function customerStore() {
 		subscribe,
 		reset: () => set({}),
 		init: async (_id) => {
+			if (!_id || _id === 'new') {
+				set({
+					email: '',
+					firstName: '',
+					lastName: ''
+				})
+				return
+			}
+
 			const queryName = 'customerGet'
 
 			const res = await queryAPI(
@@ -52,7 +61,6 @@ function customerStore() {
 				throw new Error(res)
 			}
 
-			console.log('LS -> src/lib/stores/customer.ts:77 -> res.data: ', res.data)
 			set({ ...res.data })
 		},
 		update: async (obj) => {
@@ -70,13 +78,32 @@ function customerStore() {
 				queryName
 			)
 
-			if (res.error || res.errors) {
-				throw new Error(res)
+			if (res.statusCode === 200 && res.data) {
+				set({ ...res.data })
 			}
 
-			if (!res.data) return
+			return res
+		},
+		create: async (obj) => {
+			const queryName = 'customerCreate'
 
-			set({ ...res.data })
+			const res = await queryAPI(
+				`mutation {
+            ${queryName}(${buildArgs({ obj }, true)}) {
+              _id
+              email
+              firstName
+              lastName
+            }
+        }`,
+				queryName
+			)
+
+			if (res.statusCode === 200 && res.data) {
+				set({ ...res.data })
+			}
+
+			return res
 		}
 	}
 }
