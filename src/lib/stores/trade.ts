@@ -1,50 +1,110 @@
 import { writable } from 'svelte/store'
+import { queryAPI, buildArgs } from '$lib/utils'
 
-const db = [
-	{
-		_id: '0',
-		type: 'deposit',
-		price: 30000,
-		value: 300,
-		fund: '1',
-		customer: '2',
-		tradeDate: 1577808000000,
-		createdDate: 1577808000000,
-		createdBy: '1'
-	},
-	{
-		_id: '1',
-		fund: '1',
-		type: 'buy',
-		quantity: 1000,
-		price: 10,
-		value: 10000,
-		customer: '2',
-		tradeDate: 1577808000000,
-		createdDate: 1577808000000,
-		createdBy: '1'
-	},
-	{
-		_id: '2',
-		fund: '1',
-		type: 'buy',
-		quantity: 0.01,
-		price: 30000,
-		customer: '2',
-		tradeDate: 1577808000000,
-		createdDate: 1577808000000,
-		createdBy: '1'
-	}
-]
+const responseSchema = `
+_id
+tradeType
+currency
+quantity
+price
+value
+fund
+createdBy
+customer
+createdDate
+tradeDate
+`
 
-function createTrades() {
-	const { subscribe, set, update } = writable(db)
+function tradesStore() {
+	const { subscribe, set, update } = writable([])
 
 	return {
 		subscribe,
-		add: (newObj) => update((storeValue) => [...storeValue, newObj]),
-		reset: () => set([])
+		reset: () => set([]),
+		init: async () => {
+			const queryName = 'tradeGetMany'
+
+			const res = await queryAPI(
+				`{
+            ${queryName} {${responseSchema}}
+        }`,
+				queryName
+			)
+
+			set(res.data)
+		}
 	}
 }
 
-export const trades = createTrades()
+function tradeStore() {
+	const { subscribe, set, update } = writable({})
+
+	return {
+		subscribe,
+		reset: () => set({}),
+		init: async (_id) => {
+			if (!_id || _id === 'new') {
+				set({})
+				return
+			}
+
+			const queryName = 'tradeGet'
+
+			const res = await queryAPI(
+				`{
+            ${queryName}(_id: "${_id}") {
+              ${responseSchema}
+            }
+        }`,
+				queryName
+			)
+
+			if (res.error || res.errors) {
+				throw new Error(res)
+			}
+
+			set({ ...res.data })
+		},
+		update: async (obj) => {
+			const queryName = 'tradeUpdate'
+
+			const res = await queryAPI(
+				`mutation {
+            ${queryName}(${buildArgs({ obj }, true)}) {
+              ${responseSchema}
+          }
+        }`,
+				queryName
+			)
+
+			if (res.error || res.errors) {
+				return res
+			}
+
+			set({ ...res.data })
+
+			return res
+		},
+		create: async (obj) => {
+			const queryName = 'tradeCreate'
+
+			const res = await queryAPI(
+				`mutation {
+            ${queryName}(${buildArgs({ obj }, true)}) {
+              ${responseSchema}
+            }
+        }`,
+				queryName
+			)
+
+			if (res.statusCode === 200 && res.data) {
+				set({ ...res.data })
+			}
+
+			return res
+		}
+	}
+}
+
+export const trades = tradesStore()
+export const trade = tradeStore()
