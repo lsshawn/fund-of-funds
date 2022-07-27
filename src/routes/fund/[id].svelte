@@ -135,6 +135,7 @@
 	<div class="tabs mb-6">
 		{#each tabs as tab}
 			<a
+				href={`tab-${tab}`}
 				class="tab tab-lg tab-bordered"
 				class:tab-active={activeTab === tab}
 				on:click|preventDefault={() => (activeTab = tab)}>{tab}</a
