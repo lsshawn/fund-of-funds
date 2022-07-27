@@ -11,12 +11,11 @@ const config = {
 		})
 	],
 	kit: {
-		adapter: adapter({
-			fallback: '200.html'
-		}),
+		adapter: adapter(),
 		prerender: {
 			default: false
-		}
+		},
+		ssr: false
 	}
 }
 
