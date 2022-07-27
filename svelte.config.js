@@ -11,9 +11,11 @@ const config = {
 		})
 	],
 	kit: {
-		adapter: adapter(),
+		adapter: adapter({
+			fallback: true
+		}),
 		prerender: {
-			default: true
+			default: false
 		}
 	}
 }
